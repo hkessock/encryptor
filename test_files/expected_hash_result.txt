@@ -1,0 +1,3 @@
+SHA256 hash of hashtarget.txt:
+c55395f0f5b1d610b01b145d6d39c68c8aee22160c63afdecd4e3c1cadc36674
+CertUtil: -hashfile command completed successfully.
