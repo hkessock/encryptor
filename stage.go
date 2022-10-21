@@ -124,7 +124,6 @@ func executeStage(op OperationEnum, keyMaterial []byte, ch chan<- error, numWork
 	runtime.GC()
 }
 
-// HANS DEBUG - PRODUCE HEADER AND PASS TO THIS STAGE WHEN NEEDED
 func writeStage(op OperationEnum, fileName string, force bool, numChunks uint32, chunkSizeMB uint, ch chan<- error, numWorkers uint, writeChannels []chan *[]byte) {
 	var err error = nil
 	var header EncryptedFileHeader

@@ -136,7 +136,6 @@ func decryptBlobAESGCM256(blob *[]byte, key []byte) (*[]byte, error) {
 	// Extract the nonce - which we expect to be prepended to the encrypted data
 	nonceSize := blockAESGCM.NonceSize()
 	nonce, ciphertext := (*blob)[:nonceSize], (*blob)[nonceSize:]
-	// HANS DEBUG is slicing inclusive?
 
 	plaintext, err := blockAESGCM.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
