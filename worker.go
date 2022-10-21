@@ -165,7 +165,6 @@ func writeWorker(op OperationEnum, header EncryptedFileHeader, fileName string, 
 		}
 	}(file)
 
-	// HANS DEBUG - Try non-buffered on write? XXX
 	writer := bufio.NewWriter(file)
 
 	/*
@@ -198,7 +197,6 @@ func writeWorker(op OperationEnum, header EncryptedFileHeader, fileName string, 
 		idMatch = 0
 	}
 
-	// HANS DEBUG - Currently 1 worker, and blocking on each chunk in order to simply write to end of file
 	for i := uint(1); i <= uint(len(writeChannels)); i++ {
 		if i%numWorkers == idMatch {
 			// Work on this channel
