@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"github.com/pborman/getopt/v2"
+	"math"
 	"os"
 )
 
@@ -30,6 +31,8 @@ const (
 const ReadersLimit uint8 = 30
 const ExecutorsLimit uint8 = 60
 const WritersLimit uint8 = 1 // Still researching concurrent file writing in Golang
+const ChunkSizeMin uint = 1
+const ChunkSizeMax uint = 64
 
 func initializeOptions(options *EncryptorOptions) error {
 	if options == nil {
@@ -102,17 +105,22 @@ func processOpts(options *EncryptorOptions) error {
 	}
 
 	// Exercise some constraints on worker
-	if options.Readers > ReadersLimit {
-		gLoggerStdout.Println("Read workers are currently capped at ", ReadersLimit)
-		options.Readers = ReadersLimit
+	if options.Readers < 1 || options.Readers > ReadersLimit {
+		gLoggerStdout.Println("Read workers must be between ", ReadersLimit, " and 1")
+		options.Readers = uint8(math.Max(float64(1), math.Min(float64(options.Readers), float64(ReadersLimit))))
 	}
-	if options.Executors > ExecutorsLimit {
-		gLoggerStdout.Println("Execute workers are currently capped at ", ExecutorsLimit)
-		options.Executors = ExecutorsLimit
+	if options.Executors < 1 || options.Executors > ExecutorsLimit {
+		gLoggerStdout.Println("Execute workers must be between ", ExecutorsLimit, " and 1")
+		options.Executors = uint8(math.Max(float64(1), math.Min(float64(options.Executors), float64(ExecutorsLimit))))
 	}
-	if options.Writers > WritersLimit {
-		gLoggerStdout.Println("Write workers are currently capped at ", WritersLimit)
-		options.Writers = WritersLimit
+	if options.Writers < 1 || options.Writers > WritersLimit {
+		gLoggerStdout.Println("Write workers is currently restricted to ", WritersLimit)
+		options.Writers = uint8(math.Max(float64(1), math.Min(float64(options.Writers), float64(WritersLimit))))
+	}
+
+	if options.ChunkSizeMB < ChunkSizeMin || options.ChunkSizeMB > ChunkSizeMax {
+		gLoggerStdout.Println("Chunk size (MB) must between ", ChunkSizeMin, " and ", ChunkSizeMax)
+		options.ChunkSizeMB = uint(math.Max(float64(ChunkSizeMin), math.Min(float64(options.ChunkSizeMB), float64(ChunkSizeMax))))
 	}
 
 	// We have two filenames leftover possibly

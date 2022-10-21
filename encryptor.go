@@ -12,9 +12,9 @@ import (
 
 // Tie to a make/CI system (including build number) and version convention in the future
 var gVersion = "0"
-var gGitCommit string = "0"
-var gLoggerStdout *log.Logger = log.New(os.Stdout, "", 0)
-var gLoggerStderr *log.Logger = log.New(os.Stderr, "", log.Lshortfile)
+var gGitCommit = "0"
+var gLoggerStdout = log.New(os.Stdout, "", 0)
+var gLoggerStderr = log.New(os.Stderr, "", log.Lshortfile)
 var gOptions EncryptorOptions
 
 func main() {
@@ -32,6 +32,25 @@ func main() {
 	if err != nil {
 		gLoggerStderr.Println("An error was encountered validating our configuration during startup: ", err.Error())
 		os.Exit(1)
+	}
+
+	/*
+		There are three basic operations we are capable of: encryption,
+		decryption, and hashing
+
+		Encryption and decryption are pipeline operations, hashing
+		is a direct operation
+	*/
+	if gOptions.Operation == FileHashing {
+		hash, err := hashFile(gOptions.SourceFilename)
+		if err != nil {
+			gLoggerStderr.Println("An error was encountered hashing a file: ", err.Error())
+			os.Exit(1)
+		}
+
+		// Use fmt.Println because the output is a contract and gLoggerStdout could change
+		fmt.Print(hash)
+		os.Exit(0)
 	}
 
 	job, err := pipelineJobFromOpts(&gOptions)
@@ -70,10 +89,12 @@ func validateOpts(options *EncryptorOptions) error {
 	*/
 
 	// Should we prompt for password? Empty or blank passwords not supported
-	if options.KeyHex == "" && options.Password == "" {
-		options.Password, err = promptUserForPassword()
-		if err != nil {
-			return fmt.Errorf("could not obtain password")
+	if options.Operation == Encryption || options.Operation == Decryption {
+		if options.KeyHex == "" && options.Password == "" {
+			options.Password, err = promptUserForPassword()
+			if err != nil {
+				return fmt.Errorf("could not obtain password")
+			}
 		}
 	}
 
